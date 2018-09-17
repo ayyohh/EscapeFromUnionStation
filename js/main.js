@@ -192,7 +192,7 @@ var GameState = {
     game.state.start('GameState');
   },
   win: function(player, goal) {
-    alert('You made it to the weed store!!!!');
+    alert('You survived Union Station!!!!');
     game.state.start('GameState');
   },
   createBarrel: function() {
