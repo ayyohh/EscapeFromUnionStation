@@ -1,8 +1,11 @@
 //this game will have only 1 state
-var GameState = {
 
+var endTime = 0;
+var timer = 0;
+var GameState = {
   //initiate game settings
   init: function() {
+    this.game.time.reset();
     //adapt to screen size, fit all the game
     this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
     this.scale.pageAlignHorizontally = true;
@@ -18,6 +21,8 @@ var GameState = {
 
     this.RUNNING_SPEED = 180;
     this.JUMPING_SPEED = 650;
+
+    console.log(timer, 'this is timer');
   },
 
   //load the game assets before the game starts
@@ -91,17 +96,22 @@ var GameState = {
 
     this.createBarrel();
     this.barrelCreator = this.game.time.events.loop(Phaser.Timer.SECOND * this.levelData.barrelFrequency, this.createBarrel, this)
+
+
+
   },
   update: function() {
+
+
     this.game.physics.arcade.collide(this.player, this.ground);
     this.game.physics.arcade.collide(this.player, this.platforms);
 
     this.game.physics.arcade.collide(this.barrels, this.ground);
     this.game.physics.arcade.collide(this.barrels, this.platforms);
 
-    this.game.physics.arcade.overlap(this.player, this.fires, this.killPlayer);
-    this.game.physics.arcade.overlap(this.player, this.barrels, this.killPlayer);
-    this.game.physics.arcade.overlap(this.player, this.goal, this.win);
+    this.game.physics.arcade.overlap(this.player, this.fires, this.killPlayer, this.displayTime);
+    this.game.physics.arcade.overlap(this.player, this.barrels, this.killPlayer, this.displayTime);
+    this.game.physics.arcade.overlap(this.player, this.goal, this.win, this.displayTime);
 
     this.player.body.velocity.x = 0;
 
@@ -131,15 +141,18 @@ var GameState = {
         element.kill();
       }
     }, this);
+
+    timer = this.game.time.totalElapsedSeconds();
+    game.debug.text(timer.toFixed(3), 35, 65);
   },
   createOnscreenControls: function(){
     this.leftArrow = this.add.button(20, 535, 'arrowButton');
     this.rightArrow = this.add.button(110, 535, 'arrowButton');
     this.actionButton = this.add.button(280, 535, 'actionButton');
 
-    this.leftArrow.alpha = 0.25;
-    this.rightArrow.alpha = 0.25;
-    this.actionButton.alpha = 0.25;
+    this.leftArrow.alpha = 0.40;
+    this.rightArrow.alpha = 0.40;
+    this.actionButton.alpha = 0.40;
 
     this.leftArrow.fixedToCamera = true;
     this.rightArrow.fixedToCamera = true;
@@ -187,13 +200,25 @@ var GameState = {
       this.player.customParams.isMovingRight = false;
     }, this);
   },
+  displayTime: function() {
+    endTime = timer;
+    // get seconds
+    console.log(endTime, " ending seconds");
+    game.time.reset();
+    timer = 0;
+  },
   killPlayer: function(player, fire) {
     console.log('auch!');
     game.state.start('GameState');
+
   },
   win: function(player, goal) {
-    alert('You survived Union Station!!!!');
+    $('#leaderModal').modal('show');
+    $('#popScore').click(function() {
+      $("#scoreBox").val(endTime.toFixed(3));
+    });
     game.state.start('GameState');
+
   },
   createBarrel: function() {
     //give me the first dead sprite
@@ -211,6 +236,8 @@ var GameState = {
   }
 
 };
+
+
 
 //initiate the Phaser framework
 var game = new Phaser.Game(360, 592, Phaser.AUTO);
